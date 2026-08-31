@@ -1,0 +1,13 @@
+spring:
+  application:
+    name: flight-backend-system-backend
+
+  datasource:
+    url: jdbc:postgresql://localhost:5432/flight_booking
+    username: flight_user
+    password: flight_password
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
