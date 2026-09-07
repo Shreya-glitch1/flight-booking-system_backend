@@ -33,7 +33,6 @@ public class AuthService {
         user.setPhone(request.getPhone());
         user.setPassword(passwordEncoder.encode(request.getPassword()));
 
-        // Default to Role.PASSENGER if role is empty or invalid
         if (request.getRole() != null && !request.getRole().trim().isEmpty()) {
             try {
                 user.setRole(Role.valueOf(request.getRole().trim().toUpperCase()));
