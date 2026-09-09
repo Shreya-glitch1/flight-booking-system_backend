@@ -115,7 +115,7 @@ public class DataInitializer implements CommandLineRunner {
                 new BigDecimal("7500.00"), 0
             ));
 
-            System.out.println("DataInitializer: 10 sample airports and flights seeded successfully!");
+            System.out.println("DataInitializer: 7 airports and 10 flights seeded successfully!");
         }
     }
 }

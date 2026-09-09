@@ -1,5 +1,6 @@
 package com.flightbooking.service;
 
+import com.flightbooking.dto.FlightSummaryResponse;
 import com.flightbooking.model.Flight;
 import com.flightbooking.repository.FlightRepository;
 import org.springframework.stereotype.Service;
@@ -21,6 +22,12 @@ public class FlightService {
 
     public List<Flight> getAllFlights() {
         return flightRepository.findAll();
+    }
+
+    public List<FlightSummaryResponse> getFlightSummaries() {
+        return getAllFlights().stream()
+                .map(this::toFlightSummary)
+                .toList();
     }
 
     public List<Flight> searchFlights(String source, String destination, String dateStr) {
@@ -55,5 +62,28 @@ public class FlightService {
         }
 
         return flightRepository.searchFlights(source.trim(), destination.trim(), startTime, endTime);
+    }
+
+    private FlightSummaryResponse toFlightSummary(Flight flight) {
+        String source = formatAirport(flight.getSourceAirport().getCode(), flight.getSourceAirport().getCity());
+        String destination = formatAirport(flight.getDestinationAirport().getCode(), flight.getDestinationAirport().getCity());
+
+        return new FlightSummaryResponse(
+                flight.getFlightId(),
+                flight.getFlightNumber(),
+                flight.getAirline(),
+                source + " → " + destination,
+                source,
+                destination,
+                flight.getDepartureTime(),
+                flight.getArrivalTime(),
+                flight.getPrice(),
+                flight.getAvailableSeats(),
+                flight.getAvailableSeats() > 0 ? "AVAILABLE" : "SOLD_OUT"
+        );
+    }
+
+    private String formatAirport(String code, String city) {
+        return code + " - " + city;
     }
 }

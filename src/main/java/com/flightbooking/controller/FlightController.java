@@ -1,5 +1,6 @@
 package com.flightbooking.controller;
 
+import com.flightbooking.dto.FlightSummaryResponse;
 import com.flightbooking.model.Flight;
 import com.flightbooking.service.FlightService;
 import org.springframework.http.ResponseEntity;
@@ -22,6 +23,11 @@ public class FlightController {
     public ResponseEntity<List<Flight>> getAllFlights() {
         List<Flight> flights = flightService.getAllFlights();
         return ResponseEntity.ok(flights);
+    }
+
+    @GetMapping("/summary")
+    public ResponseEntity<List<FlightSummaryResponse>> getFlightSummaries() {
+        return ResponseEntity.ok(flightService.getFlightSummaries());
     }
 
     @GetMapping("/search")
