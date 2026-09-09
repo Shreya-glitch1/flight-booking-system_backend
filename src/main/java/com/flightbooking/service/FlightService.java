@@ -24,6 +24,11 @@ public class FlightService {
         return flightRepository.findAll();
     }
 
+    public Flight getFlightById(Long flightId) {
+        return flightRepository.findById(flightId)
+                .orElseThrow(() -> new IllegalArgumentException("Flight not found"));
+    }
+
     public List<FlightSummaryResponse> getFlightSummaries() {
         return getAllFlights().stream()
                 .map(this::toFlightSummary)

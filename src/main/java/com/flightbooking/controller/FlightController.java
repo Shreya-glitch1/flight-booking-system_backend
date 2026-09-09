@@ -30,6 +30,11 @@ public class FlightController {
         return ResponseEntity.ok(flightService.getFlightSummaries());
     }
 
+    @GetMapping("/{flightId}")
+    public ResponseEntity<Flight> getFlightById(@PathVariable Long flightId) {
+        return ResponseEntity.ok(flightService.getFlightById(flightId));
+    }
+
     @GetMapping("/search")
     public ResponseEntity<List<Flight>> searchFlights(
             @RequestParam(required = false) String source,

@@ -17,7 +17,9 @@ public class BookingService {
 
     private static final int MAX_PASSENGERS_PER_BOOKING = 20;
     private static final String STATUS_CONFIRMED = "CONFIRMED";
+    private static final String STATUS_CANCELLED = "CANCELLED";
     private static final String PAYMENT_STATUS_SUCCESS = "SUCCESS";
+    private static final String PAYMENT_STATUS_REFUNDED = "REFUNDED";
     private static final String PAYMENT_METHOD_MOCK = "MOCK_CARD";
 
     private final BookingRepository bookingRepository;
@@ -126,6 +128,58 @@ public class BookingService {
         Booking booking = bookingRepository.findById(bookingId)
                 .orElseThrow(() -> new IllegalArgumentException("Booking not found"));
         return loadBookingResponse(booking);
+    }
+
+    /**
+     * Simplified cancellation for the demo: all tickets in the booking are
+     * cancelled, the mock payment is refunded, and the seats are restored.
+     */
+    @Transactional
+    public BookingResponse cancelBooking(Long bookingId) {
+        Booking booking = bookingRepository.findById(bookingId)
+                .orElseThrow(() -> new IllegalArgumentException("Booking not found"));
+
+        if (STATUS_CANCELLED.equals(booking.getBookingStatus())) {
+            throw new IllegalArgumentException("Booking is already cancelled");
+        }
+
+        List<Ticket> tickets = ticketRepository.findByBookingBookingId(bookingId);
+        if (tickets.isEmpty()) {
+            throw new IllegalStateException("Booking has no tickets to cancel");
+        }
+
+        Payment payment = paymentRepository.findByBookingBookingId(bookingId)
+                .orElseThrow(() -> new IllegalStateException("Payment not found for booking"));
+
+        Flight flight = tickets.getFirst().getFlight();
+        tickets.forEach(ticket -> ticket.setTicketStatus(STATUS_CANCELLED));
+        ticketRepository.saveAll(tickets);
+
+        booking.setBookingStatus(STATUS_CANCELLED);
+        bookingRepository.save(booking);
+
+        payment.setPaymentStatus(PAYMENT_STATUS_REFUNDED);
+        paymentRepository.save(payment);
+
+        flight.setAvailableSeats(flight.getAvailableSeats() + tickets.size());
+        flightRepository.save(flight);
+
+        List<TicketSummaryResponse> ticketSummaries = tickets.stream()
+                .map(ticket -> new TicketSummaryResponse(
+                        ticket.getTicketId(),
+                        ticket.getTicketNumber(),
+                        ticket.getPassenger().getFirstName(),
+                        ticket.getPassenger().getLastName(),
+                        ticket.getTicketStatus()))
+                .toList();
+
+        return toBookingResponse(
+                booking,
+                booking.getBooker(),
+                flight,
+                ticketSummaries,
+                payment.getAmount(),
+                payment);
     }
 
     private BookingResponse loadBookingResponse(Booking booking) {
